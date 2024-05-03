@@ -14,25 +14,29 @@ class Node:
     used = False
     parent = -1 # se inicializa como -1 para ser coherente en los primeros hijos del nodo raíz
 class HuffmanTree:
-    Tree = None
-    Root = None
-    Nodes = list()
-    dictEncoder = {}
-
+    
     def __init__(self, dict_probs):
         self.__probs = dict_probs
-        self.initNodes()
-        self.buildTree()
+        self.Nodes = list()
+        self.dictEncoder = {}
+        self.__initNodes()
+        self.__buildTree()
+        dictEncoder = {}
+        # Construimos el diccionario de códigos directamente en la construcción del árbol
         self.buildEncodingDictionary()
-    def initNodes(self):
-        """ Con este método almacenamos en objetos nodo toda la 
+        
+    def __initNodes(self):
+        """ Con este método almacenamos en objetos Node toda la 
             info de nuestro diccionario de frecuencias"""
         for key, value in self.__probs.items():
             node = Node()
             node.prob = value
             node.symbol = key
             self.Nodes.append(node)
-    def buildTree(self):
+            
+    def __buildTree(self):
+        """ Se construye el árbol con la máxima iterativa de ir emparejando los nodos de menor probabilidad
+        para generar un nuevo nodo (padre de los dos anteriores)"""
         indexMin1 = self.pop()
         indexMin2 = self.pop()
         while indexMin1 != -1 and indexMin2 != -1: # si alguno fuera -1 estaríamos terminando
@@ -44,12 +48,8 @@ class HuffmanTree:
             self.Nodes[indexMin1].parent = len(self.Nodes) - 1
             self.Nodes[indexMin2].parent = len(self.Nodes) - 1
             # Asignamos código 1 al nodo de menor probabilidad
-            if prob1 >= prob2:
-                self.Nodes[indexMin1].encoding = "0"
-                self.Nodes[indexMin2].encoding = "1"
-            else:
-                self.Nodes[indexMin1].encoding = "1"
-                self.Nodes[indexMin2].encoding = "0"
+            self.Nodes[indexMin1].encoding = "1"
+            self.Nodes[indexMin2].encoding = "0"
             indexMin1 = self.pop()
             indexMin2 = self.pop()
             
@@ -60,7 +60,7 @@ class HuffmanTree:
         minProb = 1.0 # para que asigne valores en la primera iteración
         indexMin = -1 # valor de control para el caso en el que llegamos a terminar, en el que no actualizamos nada
         for i in range(len(self.Nodes)):
-            if self.Nodes[i].prob < minProb and not self.Nodes[i].used:
+            if self.Nodes[i].prob <= minProb and not self.Nodes[i].used:
                 minProb = self.Nodes[i].prob
                 indexMin = i
         if indexMin != -1:
@@ -87,6 +87,7 @@ class HuffmanTree:
     def buildEncodingDictionary(self):
         for symbol in self.__probs.keys():
             self.dictEncoder[symbol] = self.symbol_to_code(symbol)
+            
     def decode(self, code):
         parent = len(self.Nodes) - 1 # índice de la raíz del árbol 
         for side in code:
@@ -101,8 +102,13 @@ class HuffmanTree:
         raise Error('Código no encontrado')
 
 if __name__=='__main__':
-    a = "aaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbccccccccccccccccccccggggggggggdddddfffffeeeeeeeeeeeeeee"
-    dict_prob = get_frequencies(a)
-    prueba_huffman = HuffmanTree(dict_prob)
-    prueba_huffman.decode(prueba_huffman.dictEncoder['a'])
+    probs_enunciado = {"A":0.15,"B":0.3,"C":0.2,"D":0.05,"E":0.15,"F":0.05,"G":0.1}
+    huffman1 = HuffmanTree(probs_enunciado)
+    # Mostremos el diccionario de codificación (que construimos directamente dentro del constructor de la clase).
+    huffman1.dictEncoder
+
+    probs_enunciado_cheat = {"E":0.15,"B":0.3,"C":0.2,"D":0.05,"A":0.15,"F":0.05,"G":0.1}
+    huffman1_cheat = HuffmanTree(probs_enunciado_cheat)
+    # Mostremos el diccionario de codificación (que construimos directamente dentro del constructor de la clase).
+    huffman1_cheat.dictEncoder
     pass
